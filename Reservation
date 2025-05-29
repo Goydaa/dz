@@ -1,0 +1,125 @@
+// Reservation.cs
+public abstract class Reservation
+{
+    public Guid ReservationID { get; set; } = Guid.NewGuid();
+    public string CustomerName { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+
+    public Reservation(string customerName, DateTime start, DateTime end)
+    {
+        CustomerName = customerName;
+        StartDate = start;
+        EndDate = end;
+    }
+
+    public abstract decimal CalculatePrice();
+
+    public virtual void DisplayDetails()
+    {
+        Console.WriteLine($"Reservation ID: {ReservationID}");
+        Console.WriteLine($"Customer: {CustomerName}");
+        Console.WriteLine($"From: {StartDate.ToShortDateString()} to {EndDate.ToShortDateString()}");
+    }
+}
+
+// HotelReservation.cs
+public class HotelReservation : Reservation
+{
+    public string RoomType { get; set; }
+    public string MealPlan { get; set; }
+
+    public HotelReservation(string customer, DateTime start, DateTime end, string roomType, string mealPlan)
+        : base(customer, start, end)
+    {
+        RoomType = roomType;
+        MealPlan = mealPlan;
+    }
+
+    public override decimal CalculatePrice()
+    {
+        decimal basePrice = 100m;
+        return basePrice * (decimal)(EndDate - StartDate).TotalDays;
+    }
+
+    public override void DisplayDetails()
+    {
+        base.DisplayDetails();
+        Console.WriteLine($"Room Type: {RoomType}, Meal Plan: {MealPlan}");
+    }
+}
+
+// FlightReservation.cs
+public class FlightReservation : Reservation
+{
+    public string DepartureAirport { get; set; }
+    public string ArrivalAirport { get; set; }
+
+    public FlightReservation(string customer, DateTime start, DateTime end, string from, string to)
+        : base(customer, start, end)
+    {
+        DepartureAirport = from;
+        ArrivalAirport = to;
+    }
+
+    public override decimal CalculatePrice() => 300m;
+
+    public override void DisplayDetails()
+    {
+        base.DisplayDetails();
+        Console.WriteLine($"From: {DepartureAirport} to {ArrivalAirport}");
+    }
+}
+
+// CarRentalReservation.cs
+public class CarRentalReservation : Reservation
+{
+    public string CarType { get; set; }
+    public bool InsuranceOptions { get; set; }
+
+    public CarRentalReservation(string customer, DateTime start, DateTime end, string carType, bool insurance)
+        : base(customer, start, end)
+    {
+        CarType = carType;
+        InsuranceOptions = insurance;
+    }
+
+    public override decimal CalculatePrice()
+    {
+        decimal pricePerDay = 50;
+        return pricePerDay * (decimal)(EndDate - StartDate).TotalDays + (InsuranceOptions ? 100 : 0);
+    }
+
+    public override void DisplayDetails()
+    {
+        base.DisplayDetails();
+        Console.WriteLine($"Car Type: {CarType}, Insurance: {(InsuranceOptions ? "Yes" : "No")}");
+    }
+}
+
+// BookingSystem.cs
+public class BookingSystem
+{
+    private readonly List<Reservation> _reservations = new();
+
+    public void CreateReservation(Reservation reservation)
+    {
+        _reservations.Add(reservation);
+        Console.WriteLine("Reservation created.");
+    }
+
+    public void CancelReservation(Guid reservationID)
+    {
+        var res = _reservations.FirstOrDefault(r => r.ReservationID == reservationID);
+        if (res != null)
+        {
+            _reservations.Remove(res);
+            Console.WriteLine("Reservation canceled.");
+        }
+    }
+
+    public decimal GetTotalBookingValue()
+    {
+        return _reservations.Sum(r => r.CalculatePrice());
+    }
+}
