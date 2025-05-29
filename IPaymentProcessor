@@ -1,0 +1,89 @@
+// IPaymentProcessor.cs
+public interface IPaymentProcessor
+{
+    void ProcessPayment(decimal amount);
+    void RefundPayment(decimal amount);
+}
+
+// IPaymentValidator.cs
+public interface IPaymentValidator
+{
+    bool ValidatePayment(decimal amount);
+}
+
+// PayPalProcessor.cs
+public class PayPalProcessor : IPaymentProcessor
+{
+    public void ProcessPayment(decimal amount)
+    {
+        Console.WriteLine($"Processing PayPal payment: {amount:C}");
+    }
+
+    public void RefundPayment(decimal amount)
+    {
+        Console.WriteLine($"Refunding PayPal payment: {amount:C}");
+    }
+}
+
+// CreditCardProcessor.cs
+public class CreditCardProcessor : IPaymentProcessor, IPaymentValidator
+{
+    public void ProcessPayment(decimal amount)
+    {
+        Console.WriteLine($"Processing Credit Card payment: {amount:C}");
+    }
+
+    public void RefundPayment(decimal amount)
+    {
+        Console.WriteLine($"Refunding Credit Card payment: {amount:C}");
+    }
+
+    public bool ValidatePayment(decimal amount)
+    {
+        return amount > 0;
+    }
+}
+
+// CryptoCurrencyProcessor.cs
+public class CryptoCurrencyProcessor : IPaymentProcessor
+{
+    public void ProcessPayment(decimal amount)
+    {
+        Console.WriteLine($"Processing Crypto payment: {amount:C}");
+    }
+
+    public void RefundPayment(decimal amount)
+    {
+        Console.WriteLine($"Refunding Crypto payment: {amount:C}");
+    }
+}
+
+// PaymentService.cs
+public class PaymentService
+{
+    private readonly IPaymentProcessor _processor;
+    private readonly IPaymentValidator? _validator;
+
+    public PaymentService(IPaymentProcessor processor, IPaymentValidator? validator = null)
+    {
+        _processor = processor;
+        _validator = validator;
+    }
+
+    public void MakePayment(decimal amount)
+    {
+        if (_validator == null || _validator.ValidatePayment(amount))
+        {
+            _processor.ProcessPayment(amount);
+        }
+        else
+        {
+            Console.WriteLine("Payment validation failed.");
+        }
+    }
+
+    public void RefundPayment(decimal amount)
+    {
+        _processor.RefundPayment(amount);
+    }
+}
